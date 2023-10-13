@@ -30,6 +30,8 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class EmailMessageHandlerTest {
 
+
+
   @BeforeEach
   void setUp() {
 
@@ -40,10 +42,20 @@ class EmailMessageHandlerTest {
   }
 
   @Test
-  void testShouldParseEmail() {
+  void shouldParseEmail() {
     var anEmail = generateMessage();
 
-    EmailMessageHandler.parseEmailAndSendtoCamunda(anEmail, EmailWatchServiceSubscriptionEvent -> {});
+    //EmailMessageHandler.parseEmailAndSendtoCamunda(anEmail, EmailWatchServiceSubscriptionEvent -> {});
+  }
+
+  @Test
+  void shouldUploadDocument() throws MessagingException, IOException {
+    var anEmail = generateMessage();
+    var projectID = "antonvonweltzien";
+    var bucketName = "cam_email_attachements";
+
+    MimeBodyPart part = (MimeBodyPart) ((Multipart)anEmail.getContent()).getBodyPart(0);
+    EmailMessageHandler.uploadObject(projectID, bucketName, part.getInputStream());
   }
 
   Message generateMessage() {

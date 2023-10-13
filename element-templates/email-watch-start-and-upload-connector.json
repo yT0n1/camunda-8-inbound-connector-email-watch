@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
   "name": "Email Watch Inbound Connector",
-  "id": "io.camunda.connectors.EmailWatchService.start",
+  "id": "io.camunda.connectors.EmailWatchAndUploadService.start",
   "description": "Listen for new emails to start a process",
   "category": {
     "id": "connectors",
@@ -23,6 +23,10 @@
       "label": "Email server configuration"
     },
     {
+      "id": "gcsConfig",
+      "label": "GCS configuration"
+    },
+    {
       "id": "output",
       "label": "Output"
     }
@@ -30,7 +34,7 @@
   "properties": [
     {
       "type": "Hidden",
-      "value": "io.camunda:emailwatchserviceinbound:1",
+      "value": "io.camunda:EmailWatchAndUploadService:1",
       "binding": {
         "type": "zeebe:property",
         "name": "inbound.type"
@@ -136,6 +140,36 @@
       "binding": {
         "type": "zeebe:property",
         "name": "pollingInterval"
+      },
+      "constraints": {
+        "notEmpty": true
+      }
+    },
+    {
+      "type": "String",
+      "label": "GCP Project ID",
+      "feel": "optional",
+      "group": "gcsConfig",
+      "description": "GCP Project ID",
+      "value": "",
+      "binding": {
+        "type": "zeebe:property",
+        "name": "gcsProject"
+      },
+      "constraints": {
+        "notEmpty": true
+      }
+    },
+    {
+      "type": "String",
+      "label": "GCS Bucket Name",
+      "feel": "optional",
+      "group": "gcsConfig",
+      "description": "GCS Bucket Name",
+      "value": "",
+      "binding": {
+        "type": "zeebe:property",
+        "name": "gcsBucketName"
       },
       "constraints": {
         "notEmpty": true

@@ -10,12 +10,14 @@ public class EmailWatchServiceSubscriptionEvent {
   private final Object[] replyTo;
   private final String subject;
   private final Object[] body;
+  private final Object[] gcsUploads;
 
-  public EmailWatchServiceSubscriptionEvent(Object[] from, Object[] replyTo, String subject, Object[] body) {
+  public EmailWatchServiceSubscriptionEvent(Object[] from, Object[] replyTo, String subject, Object[] body, Object[] gcsUploads) {
     this.from = from;
     this.replyTo = replyTo;
     this.subject = subject;
     this.body = body;
+    this.gcsUploads =  gcsUploads;
   }
 
   public Object[] getFrom() {
@@ -30,7 +32,12 @@ public class EmailWatchServiceSubscriptionEvent {
   public Object[] getBody() {
     return body;
   }
-    @Override
+
+  public Object[] getGcsUploads() {
+    return gcsUploads;
+  }
+
+  @Override
   public boolean equals(Object o) {
     System.out.println("checking...");
     if (this == o) {

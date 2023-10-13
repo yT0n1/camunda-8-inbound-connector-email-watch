@@ -14,15 +14,19 @@ import java.util.function.Consumer;
 public class IdleManagerHandler implements Runnable {
 
     private final static Logger LOG = LoggerFactory.getLogger(IdleManagerHandler.class);
+    private final String bucketName;
+    private final String projectID;
     private IdleManager idleManager;
     private Folder imapFolder;
 
     private Consumer<EmailWatchServiceSubscriptionEvent> callback;
 
-    public IdleManagerHandler(IdleManager idleManager, Folder imapFolder, Consumer<EmailWatchServiceSubscriptionEvent> callback) {
+    public IdleManagerHandler(IdleManager idleManager, Folder imapFolder, String bucketName, String projectID,Consumer<EmailWatchServiceSubscriptionEvent> callback) {
         this.idleManager = idleManager;
         this.imapFolder = imapFolder;
         this.callback = callback;
+        this.bucketName = bucketName;
+        this.projectID = projectID;
     }
 
     @Override
@@ -36,7 +40,7 @@ public class IdleManagerHandler implements Runnable {
                 LOG.info("Email(s) received in folder: " + folder + " with " + msgs.length + " new message(s)");
 
                 for(Message message: msgs) {
-                    EmailMessageHandler.parseEmailAndSendtoCamunda(message, callback);
+                    EmailMessageHandler.parseEmailAndSendtoCamunda(message, projectID,bucketName,callback);
                 }
 
                 try {

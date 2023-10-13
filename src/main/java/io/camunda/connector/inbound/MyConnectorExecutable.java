@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@InboundConnector(name = "EMAILWATCHINBOUNDCONNECTOR", type = "io.camunda:emailwatchserviceinbound:1")
+@InboundConnector(name = "EMAILWATCHINBOUNDCONNECTOR", type = "io.camunda:EmailWatchAndUploadService:1")
 public class MyConnectorExecutable implements InboundConnectorExecutable {
 
   private EmailWatchServiceSubscription subscription;
@@ -18,19 +18,13 @@ public class MyConnectorExecutable implements InboundConnectorExecutable {
   private ExecutorService executorService;
   public CompletableFuture<?> future;
 
-
   @Override
   public void activate(InboundConnectorContext connectorContext) {
     MyConnectorProperties props = connectorContext.bindProperties(MyConnectorProperties.class);
     this.connectorContext = connectorContext;
     this.executorService = Executors.newSingleThreadExecutor();
-
-    this.future =
-            CompletableFuture.runAsync(
-                    () -> {
-                      new EmailWatchServiceSubscription(props.getUsername(), props.getPassword(), props.getUrl(), props.getPort(), props.getTimeout(), props.getFolder(), props.getPollingInterval(), this::onEvent);
-                    },
-                    this.executorService);
+    var sub = new EmailWatchServiceSubscription(props, this::onEvent);
+    this.future = CompletableFuture.runAsync(sub, this.executorService);
   }
 
   @Override

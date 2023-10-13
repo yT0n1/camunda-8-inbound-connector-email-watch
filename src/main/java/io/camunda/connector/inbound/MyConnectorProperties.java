@@ -14,6 +14,24 @@ public class MyConnectorProperties {
   private String timeout;
   private String folder;
   private String pollingInterval;
+  private String gcsBucketName;
+  private String gcsProject;
+
+  public String getGcsBucketName() {
+    return gcsBucketName;
+  }
+
+  public void setGcsBucketName(String gcsBucketName) {
+    this.gcsBucketName = gcsBucketName;
+  }
+
+  public String getGcsProject() {
+    return gcsProject;
+  }
+
+  public void setGcsProject(String gcsProject) {
+    this.gcsProject = gcsProject;
+  }
 
   public String getUsername() {
     return username;
@@ -61,13 +79,9 @@ public class MyConnectorProperties {
 
   @Override
   public String toString() {
-    return "MyConnectorProperties{" +
-            "username='" + username + '\'' +
-            "url='" + url + '\'' +
-            "port='" + port + '\'' +
-            "timeout='" + timeout + '\'' +
-            "folder='" + folder + '\'' +
-            "polling interval='" + pollingInterval + '\'' +
-        '}';
+    return "MyConnectorProperties{" + "username='" + username + '\'' + ", password='" + password + '\'' + ", url='"
+        + url + '\'' + ", port='" + port + '\'' + ", timeout='" + timeout + '\'' + ", folder='" + folder + '\''
+        + ", pollingInterval='" + pollingInterval + '\'' + ", gcsBucketName='" + gcsBucketName + '\'' + ", gcsProject='"
+        + gcsProject + '\'' + '}';
   }
 }
