@@ -66,25 +66,10 @@ public class EmailWatchServiceSubscription implements Runnable {
 //    }
 
     public EmailWatchServiceSubscription(MyConnectorProperties connectorProperties, Consumer<EmailWatchServiceSubscriptionEvent> callback) {
-        try {
-            Properties props = new Properties();
-            props.setProperty("mail.store.protocol", "imaps");
-            props.setProperty("mail.imaps.host", connectorProperties.getUrl());
-            props.setProperty("mail.imaps.port", connectorProperties.getPort());
-            props.setProperty("mail.imaps.connectiontimeout", connectorProperties.getTimeout());
-            props.setProperty("mail.imaps.usesocketchannels", "true");
 
             this.connectorProperties = connectorProperties;
             this.callback = callback;
 
-            session = Session.getDefaultInstance(props);
-            store = session.getStore();
-            store.connect(connectorProperties.getUsername(), connectorProperties.getPassword());
-
-
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void stop() {
@@ -94,6 +79,18 @@ public class EmailWatchServiceSubscription implements Runnable {
     @Override
     public void run() {
         try {
+            LOG.info("running subscription thread");
+            Properties props = new Properties();
+            props.setProperty("mail.store.protocol", "imaps");
+            props.setProperty("mail.imaps.host", connectorProperties.getUrl());
+            props.setProperty("mail.imaps.port", connectorProperties.getPort());
+            props.setProperty("mail.imaps.connectiontimeout", connectorProperties.getTimeout());
+            props.setProperty("mail.imaps.usesocketchannels", "true");
+
+            session = Session.getDefaultInstance(props);
+            store = session.getStore();
+            store.connect(connectorProperties.getUsername(), connectorProperties.getPassword());
+
             Folder imapFolder = store.getFolder(connectorProperties.getFolder());
             imapFolder.open(Folder.READ_WRITE);
             CheckEmailFolder.searchForUnreadEmails(imapFolder, connectorProperties.getGcsProject(), connectorProperties.getGcsBucketName(), callback);
@@ -114,6 +111,7 @@ public class EmailWatchServiceSubscription implements Runnable {
                 es.shutdown();
             }
         } catch (MessagingException | IOException e) {
+            LOG.warn(e.toString());
             throw new RuntimeException(e);
         }
     }
