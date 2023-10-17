@@ -8,6 +8,10 @@
 
 A starting point to build a StartInbound Email Watch Connector. Monitor inbox folders for incoming emails and start process instances. Feedback and PRs are welcome! In the Connector you'll need to provide the username and password of the email account. For gmail you'll need to create an [app password](https://support.google.com/accounts/answer/185833?hl=en#). You'll need to provide the IMAP protocol host URL, port, and connection timeout. You'll also need to provide the folder to monitor (typically "INBOX") and the long polling interval in seconds. Upon connector startup it will check for unread emails and start instances or publish messages. It will then use IMAP's IDLE protocol to wait for new emails to avoid needless polling. Despite standards that say IDLE can be active for up to 30 minutes, most vendors will close connections after a few minutes so be sure to keep the long polling interval to under five minutes in most cases.
 
+If you want to use inbound connectors with SaaS, they must be permitted to access Operate with their client credentials. 
+If you are running this locally you need to replace the section of ```Configuration for Operate Keycloak auth``` 
+in the [applications.properties](./src/test/resources/application.properties) with your SaaS client credentials.
+
 There are four outputs and can be accessed from the ```event``` object:
 ```event.from```,
 ```event.replyTo```,
