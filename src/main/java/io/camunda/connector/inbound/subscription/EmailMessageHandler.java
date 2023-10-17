@@ -56,7 +56,7 @@ public class EmailMessageHandler {
           if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
             String file = part.getFileName();
             LOG.info("mimtype of part {} is {} and filename is {}", i + 1, part.getDisposition(), file);
-            part.saveFile("." + File.separator + part.getFileName());
+            //part.saveFile("." + File.separator + part.getFileName());
             parts.add(file);
             uploads.add(uploadObject(projectID,bucketName,part.getInputStream()));
           }
