@@ -41,14 +41,14 @@ class EmailMessageHandlerTest {
   void tearDown() {
   }
 
-  @Test
+  //@Test todo, update to new signature
   void shouldParseEmail() {
     var anEmail = generateMessage();
 
     //EmailMessageHandler.parseEmailAndSendtoCamunda(anEmail, EmailWatchServiceSubscriptionEvent -> {});
   }
 
-  @Test
+  //@Test This test will do an actual upload
   void shouldUploadDocument() throws MessagingException, IOException {
     var anEmail = generateMessage();
     var projectID = "antonvonweltzien";
