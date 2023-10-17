@@ -80,30 +80,6 @@ public class EmailMessageHandler {
       throws IOException {
     var objectName = UUID.randomUUID().toString();
 
-    // The ID of your GCP project
-    // String projectId = "your-project-id";
-
-    // The ID of your GCS bucket
-    // String bucketName = "your-unique-bucket-name";
-
-    // The ID of your GCS object
-    // String objectName = "your-object-name";
-
-    // The path to your file to upload
-    // String filePath = "path/to/your/file"
-
-//    try (FileInputStream serviceAccountStream = new FileInputStream(jsonFilePath)) {
-//
-//      GoogleCredentials credentials = null;
-//      try {
-//        credentials = GoogleCredentials.fromStream(serviceAccountStream);
-//      } catch (IOException e) {
-//        throw new InvalidCredentialFileException("Invalid credentials in the provided JSON File");
-//      }
-//
-//      return StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-//
-//    }
 
     var credentials = GoogleCredentials.getApplicationDefault();
     Storage storage = StorageOptions.newBuilder().setProjectId(projectId).setCredentials(credentials).build().getService();
