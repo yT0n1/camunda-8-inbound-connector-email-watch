@@ -70,7 +70,9 @@ public class EmailMessageHandler {
           message.getReplyTo(), message.getSubject(), emailBody, gcpUploads);
       callback.accept(ewsse);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.error("An error occurred during email handling: {}", e.getMessage());
+      LOG.error("", e);
+
       //todo this should perhaps rethrow so emails can be picket up later again.
     }
 
@@ -79,7 +81,7 @@ public class EmailMessageHandler {
   public static BlobId uploadObject(String projectId, String bucketName, InputStream fileStream)
       throws IOException {
     var objectName = UUID.randomUUID().toString();
-
+    LOG.info("Beginning upload of File as {} to project {} in bucket {}", objectName, projectId, bucketName);
 
     var credentials = GoogleCredentials.getApplicationDefault();
     Storage storage = StorageOptions.newBuilder().setProjectId(projectId).setCredentials(credentials).build().getService();
@@ -101,7 +103,7 @@ public class EmailMessageHandler {
       precondition = Storage.BlobWriteOption.generationMatch(storage.get(bucketName, objectName).getGeneration());
     }
     var completeBlogInfo = storage.createFrom(blobInfo, fileStream, precondition);
-    System.out.println("File uploaded to bucket " + bucketName + " as " + objectName);
+    LOG.info("File uploaded complete to bucket {} as {}",  bucketName, objectName);
     return completeBlogInfo.getBlobId();
   }
 
