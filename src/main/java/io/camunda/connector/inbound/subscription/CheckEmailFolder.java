@@ -11,6 +11,7 @@ public class CheckEmailFolder {
   private final static Logger LOG = LoggerFactory.getLogger(CheckEmailFolder.class);
 
   public static void searchForUnreadEmails(Folder imapFolder, String projectId, String bucketName, Consumer<EmailWatchServiceSubscriptionEvent> callback) {
+    LOG.info("Fetching existing unread emails");
     try {
       Message[] messages = imapFolder.search(new FlagTerm(new Flags(Flags.Flag.SEEN), false));
       // Process each unseen email
@@ -22,7 +23,7 @@ public class CheckEmailFolder {
 
       //mark emails as seen so it will not be picked up twice
       imapFolder.setFlags(messages, new Flags(Flags.Flag.SEEN), true);
-      imapFolder.close();
+      //imapFolder.close();
 
     } catch (Exception e) {
         e.printStackTrace();

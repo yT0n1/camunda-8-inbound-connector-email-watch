@@ -103,7 +103,7 @@ public class EmailMessageHandler {
       precondition = Storage.BlobWriteOption.generationMatch(storage.get(bucketName, objectName).getGeneration());
     }
     var completeBlogInfo = storage.createFrom(blobInfo, fileStream, precondition);
-    LOG.info("File uploaded complete to bucket {} as {}",  bucketName, objectName);
+    LOG.info("File upload completed to bucket {} as {}",  bucketName, objectName);
     return completeBlogInfo.getBlobId();
   }
 

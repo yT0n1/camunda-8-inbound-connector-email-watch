@@ -5,6 +5,8 @@ import io.camunda.connector.api.inbound.InboundConnectorContext;
 import io.camunda.connector.api.inbound.InboundConnectorExecutable;
 import io.camunda.connector.inbound.subscription.EmailWatchServiceSubscription;
 import io.camunda.connector.inbound.subscription.EmailWatchServiceSubscriptionEvent;
+import jakarta.mail.MessagingException;
+import org.apache.commons.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,13 +30,19 @@ public class MyConnectorExecutable implements InboundConnectorExecutable {
     MyConnectorProperties props = connectorContext.bindProperties(MyConnectorProperties.class);
     this.connectorContext = connectorContext;
     this.executorService = Executors.newSingleThreadExecutor();
-    var sub = new EmailWatchServiceSubscription(props, this::onEvent);
-    this.future = CompletableFuture.runAsync(sub, this.executorService);
+    try {
+      this.subscription = new EmailWatchServiceSubscription(props, this::onEvent);
+    } catch (MessagingException e) {
+      LOG.error("Could not start ");
+      throw new RuntimeException("Could not start Inbound email connector",e);
+    }
+    this.future = CompletableFuture.runAsync(this.subscription, this.executorService);
   }
 
   @Override
   public void deactivate() {
     LOG.info("deactivating");
+    this.subscription.stop();
   }
 
   private void onEvent(EmailWatchServiceSubscriptionEvent rawEvent) {
