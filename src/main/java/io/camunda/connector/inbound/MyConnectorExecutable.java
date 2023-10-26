@@ -35,7 +35,6 @@ public class MyConnectorExecutable implements InboundConnectorExecutable {
   @Override
   public void deactivate() {
     LOG.info("deactivating");
-    subscription.stop();
   }
 
   private void onEvent(EmailWatchServiceSubscriptionEvent rawEvent) {
