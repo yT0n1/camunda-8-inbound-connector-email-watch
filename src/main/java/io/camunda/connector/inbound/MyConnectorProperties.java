@@ -1,6 +1,5 @@
 package io.camunda.connector.inbound;
 
-import io.camunda.connector.api.annotation.Secret;
 
 /**
  * Configuration properties for inbound Connector
@@ -16,6 +15,15 @@ public class MyConnectorProperties {
   private String pollingInterval;
   private String gcsBucketName;
   private String gcsProject;
+  private String path;
+
+  public String getPath() {
+    return path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
+  }
 
   public String getGcsBucketName() {
     return gcsBucketName;

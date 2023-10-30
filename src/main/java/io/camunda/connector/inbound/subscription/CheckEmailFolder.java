@@ -10,14 +10,14 @@ public class CheckEmailFolder {
 
   private final static Logger LOG = LoggerFactory.getLogger(CheckEmailFolder.class);
 
-  public static void searchForUnreadEmails(Folder imapFolder, String projectId, String bucketName, Consumer<EmailWatchServiceSubscriptionEvent> callback) {
+  public static void searchForUnreadEmails(Folder imapFolder, String projectId, String bucketName, String path, Consumer<EmailWatchServiceSubscriptionEvent> callback) {
     LOG.info("Fetching existing unread emails");
     try {
       Message[] messages = imapFolder.search(new FlagTerm(new Flags(Flags.Flag.SEEN), false));
       // Process each unseen email
       for (Message message : messages) {
         LOG.info("New unread email on connector startup: {} from {}", message.getSubject(), message.getFrom()[0].toString());
-        EmailMessageHandler.parseEmailAndSendtoCamunda(message,projectId, bucketName, callback);
+        EmailMessageHandler.parseEmailAndSendtoCamunda(message,projectId, bucketName, path, callback);
 
       }
 

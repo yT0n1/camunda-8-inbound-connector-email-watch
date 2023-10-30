@@ -23,6 +23,9 @@ public class MyConnectorExecutable implements InboundConnectorExecutable {
   public CompletableFuture<?> future;
   private final static Logger LOG = LoggerFactory.getLogger(MyConnectorExecutable.class);
 
+  public MyConnectorExecutable() {
+    LOG.info("Creating new Email Upload Connector Object");
+  }
 
   @Override
   public void activate(InboundConnectorContext connectorContext) {

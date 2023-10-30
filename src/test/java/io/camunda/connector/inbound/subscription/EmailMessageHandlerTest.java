@@ -55,7 +55,7 @@ class EmailMessageHandlerTest {
     var bucketName = "cam_email_attachements";
 
     MimeBodyPart part = (MimeBodyPart) ((Multipart)anEmail.getContent()).getBodyPart(0);
-    EmailMessageHandler.uploadObject(projectID, bucketName, part.getInputStream());
+    EmailMessageHandler.uploadObject(projectID, bucketName, "","text",part.getInputStream());
   }
 
   Message generateMessage() {

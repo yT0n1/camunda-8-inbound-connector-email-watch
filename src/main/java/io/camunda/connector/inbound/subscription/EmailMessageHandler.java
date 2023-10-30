@@ -23,7 +23,7 @@ import com.google.cloud.storage.StorageOptions;
 public class EmailMessageHandler {
   private final static Logger LOG = LoggerFactory.getLogger(EmailMessageHandler.class);
 
-  public static void parseEmailAndSendtoCamunda(Message message, String projectID, String bucketName,
+  public static void parseEmailAndSendtoCamunda(Message message, String projectID, String bucketName, String path,
       Consumer<EmailWatchServiceSubscriptionEvent> callback) {
     try {
       LOG.info("From " + message.getFrom());
@@ -39,8 +39,8 @@ public class EmailMessageHandler {
         emailBody = new Object[] { content };
       } else if (content instanceof Multipart multiPart) {
 
-        ArrayList parts = new ArrayList<Object>();
-        ArrayList uploads = new ArrayList<Object>();
+        ArrayList parts = new ArrayList<String>();
+        ArrayList uploads = new ArrayList<BlobId>();
 
         int partCount = multiPart.getCount();
         LOG.info("processing multipart message with {} parts", partCount);
@@ -58,7 +58,7 @@ public class EmailMessageHandler {
             LOG.info("mimtype of part {} is {} and filename is {}", i + 1, part.getDisposition(), file);
             //part.saveFile("." + File.separator + part.getFileName());
             parts.add(file);
-            uploads.add(uploadObject(projectID,bucketName,part.getInputStream()));
+            uploads.add(uploadObject(projectID,bucketName,path, part.getContentType(), part.getInputStream()));
           }
 
         }
@@ -70,7 +70,7 @@ public class EmailMessageHandler {
           message.getReplyTo(), message.getSubject(), emailBody, gcpUploads);
       callback.accept(ewsse);
     } catch (Exception e) {
-      LOG.error("An error occurred during email handling: {}", e.getMessage());
+      LOG.error("An error occurred during email handling", e);
       LOG.error("", e);
 
       //todo this should perhaps rethrow so emails can be picket up later again.
@@ -78,15 +78,15 @@ public class EmailMessageHandler {
 
   }
 
-  public static BlobId uploadObject(String projectId, String bucketName, InputStream fileStream)
+  public static BlobId uploadObject(String projectId, String bucketName, String path, String contentType, InputStream fileStream)
       throws IOException {
     var objectName = UUID.randomUUID().toString();
     LOG.info("Beginning upload of File as {} to project {} in bucket {}", objectName, projectId, bucketName);
 
     var credentials = GoogleCredentials.getApplicationDefault();
     Storage storage = StorageOptions.newBuilder().setProjectId(projectId).setCredentials(credentials).build().getService();
-    BlobId blobId = BlobId.of(bucketName, objectName);
-    BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+    BlobId blobId = BlobId.of(bucketName, path + objectName);
+    BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(contentType).build();
 
     // Optional: set a generation-match precondition to avoid potential race
     // conditions and data corruptions. The request returns a 412 error if the
@@ -102,7 +102,7 @@ public class EmailMessageHandler {
       // changes before the request runs.
       precondition = Storage.BlobWriteOption.generationMatch(storage.get(bucketName, objectName).getGeneration());
     }
-    var completeBlogInfo = storage.createFrom(blobInfo, fileStream, precondition);
+    var completeBlogInfo = storage.createFrom(blobInfo,fileStream, precondition);
     LOG.info("File upload completed to bucket {} as {}",  bucketName, objectName);
     return completeBlogInfo.getBlobId();
   }

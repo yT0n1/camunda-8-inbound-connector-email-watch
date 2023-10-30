@@ -31,7 +31,7 @@ public class IdleManagerHandler implements Runnable {
 
     @Override
     public void run(){
-        LOG.info("Start long poll cycle");
+        /*LOG.info("Start long poll cycle");
         try {
             imapFolder.addMessageCountListener(new MessageCountAdapter() {
                 public void messagesAdded(MessageCountEvent ev) {
@@ -55,7 +55,7 @@ public class IdleManagerHandler implements Runnable {
             idleManager.watch(imapFolder);
         } catch(Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
 }

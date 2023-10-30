@@ -41,11 +41,15 @@ public class EmailWatchServiceSubscription implements Runnable {
     try {
       LOG.info("running subscription thread");
 
-      this.session = Session.getDefaultInstance(props);
+      this.session = Session.getInstance(props);
+      LOG.info("creating session {}", session);
       //session.setDebug(true);
       Store store = session.getStore();
+      LOG.info("creating store {}", store.hashCode());
       store.connect(connectorProperties.getUsername(), connectorProperties.getPassword());
       this.imapFolder = (IMAPFolder) store.getFolder(connectorProperties.getFolder());
+      LOG.info("creating folder {}", imapFolder.hashCode());
+
 
       imapFolder.open(Folder.READ_WRITE);
     } catch (MessagingException e) {
@@ -65,8 +69,8 @@ public class EmailWatchServiceSubscription implements Runnable {
   @Override
   public void run() {
 
-    CheckEmailFolder.searchForUnreadEmails(this.imapFolder, connectorProperties.getGcsProject(),
-        connectorProperties.getGcsBucketName(), callback);
+    /*CheckEmailFolder.searchForUnreadEmails(this.imapFolder, connectorProperties.getGcsProject(),
+        connectorProperties.getGcsBucketName(), connectorProperties.getPath(), callback);*/
 
 
     var projectID = connectorProperties.getGcsProject();
@@ -81,15 +85,7 @@ public class EmailWatchServiceSubscription implements Runnable {
         LOG.info("Email(s) received in folder: " + folder + " with " + msgs.length + " new message(s)");
 
         for (Message message : msgs) {
-          EmailMessageHandler.parseEmailAndSendtoCamunda(message, projectID, bucketName, callback);
-        }
-
-
-        try {
-          // set msgs to SEEN and process new messages
-          folder.setFlags(msgs, new Flags(Flags.Flag.SEEN), true);
-        } catch (MessagingException mex) {
-          LOG.error("Error on starting new watch", mex);
+          EmailMessageHandler.parseEmailAndSendtoCamunda(message, projectID, bucketName, connectorProperties.getPath(), callback);
         }
       }
     });
