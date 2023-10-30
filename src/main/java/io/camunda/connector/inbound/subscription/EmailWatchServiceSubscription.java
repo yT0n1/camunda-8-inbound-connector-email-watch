@@ -39,7 +39,7 @@ public class EmailWatchServiceSubscription implements Runnable {
     this.callback = callback;
 
     try {
-      LOG.info("running subscription thread");
+      LOG.info("running subscription thread for {}");
 
       this.session = Session.getInstance(props);
       LOG.info("creating session {}", session);

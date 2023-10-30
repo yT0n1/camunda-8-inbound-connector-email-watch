@@ -176,18 +176,6 @@
       }
     },
     {
-      "type": "String",
-      "label": "GCS Path",
-      "feel": "optional",
-      "group": "gcsConfig",
-      "description": "GCS Path",
-      "value": "",
-      "binding": {
-        "type": "zeebe:property",
-        "name": "path"
-      }
-    },
-    {
       "label": "Event variable",
       "type": "String",
       "group": "output",

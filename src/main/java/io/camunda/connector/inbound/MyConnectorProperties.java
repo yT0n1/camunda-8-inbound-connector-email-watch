@@ -15,7 +15,7 @@ public class MyConnectorProperties {
   private String pollingInterval;
   private String gcsBucketName;
   private String gcsProject;
-  private String path;
+  private String path = "";
 
   public String getPath() {
     return path;

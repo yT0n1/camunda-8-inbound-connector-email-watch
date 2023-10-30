@@ -48,6 +48,11 @@
       <version>${version.connector-core}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${version.slf4j}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -102,7 +107,12 @@
       <scope>test</scope>
     </dependency>
 
-
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>${version.slf4j}</version>
+      <scope>test</scope>
+    </dependency>
 
     <!-- for testing connectors locally in bundle with runtime -->
     <dependency>
@@ -111,19 +121,11 @@
       <version>${version.connector-runtime}</version>
       <scope>test</scope>
       <exclusions>
-
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <!-- Logback Classic (SLF4J implementation) -->
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/jakarta.mail/jakarta.mail -->

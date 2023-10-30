@@ -29,7 +29,7 @@ public class MyConnectorExecutable implements InboundConnectorExecutable {
 
   @Override
   public void activate(InboundConnectorContext connectorContext) {
-    LOG.info("activating");
+    LOG.info("activating for process id {}", connectorContext.getDefinition().bpmnProcessId());
     MyConnectorProperties props = connectorContext.bindProperties(MyConnectorProperties.class);
     this.connectorContext = connectorContext;
     this.executorService = Executors.newSingleThreadExecutor();
