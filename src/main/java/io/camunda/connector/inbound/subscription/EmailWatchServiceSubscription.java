@@ -101,18 +101,25 @@ public class EmailWatchServiceSubscription implements Runnable {
         supportsIdle = false;
       }
       while (this.isRunning) {
-        if (supportsIdle) {
-          LOG.info("Starting IDLE ");
-          this.imapFolder.idle();
-          LOG.info("IDLE done");
-        } else {
-          LOG.info("Starting Sleep ");
-          Thread.sleep(10000);// sleep before polling again
-          LOG.info("Sleep Done");
-          // This is to force the IMAP server to send us
-          // EXISTS notifications.
-          this.imapFolder.getMessageCount();
-        }
+        try {
+          if (supportsIdle) {
+            LOG.info("Starting IDLE ");
+            this.imapFolder.idle();
+            LOG.info("IDLE done");
+          } else {
+            LOG.info("Starting Sleep ");
+            Thread.sleep(10000);// sleep before polling again
+            LOG.info("Sleep Done");
+            // This is to force the IMAP server to send us
+            // EXISTS notifications.
+            var count = this.imapFolder.getMessageCount();
+            LOG.info("current unread count {}", count);
+          }
+        } catch (MessagingException e){
+          LOG.error("Error while monitoring Imap folder. Retrying in 5s", e);
+          Thread.sleep(5000);
+          // Todo, add appropriate retry and fail eventually setting connector to unhealthy
+          }
       }
     } catch (MessagingException e) {
       LOG.error("Error while monitoring Imap folder", e);
