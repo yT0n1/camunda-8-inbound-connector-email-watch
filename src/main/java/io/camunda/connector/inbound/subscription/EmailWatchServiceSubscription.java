@@ -10,6 +10,7 @@ import jakarta.mail.Session;
 import jakarta.mail.Store;
 import jakarta.mail.event.MessageCountAdapter;
 import jakarta.mail.event.MessageCountEvent;
+import org.apache.commons.logging.Log;
 import org.eclipse.angus.mail.imap.IMAPFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,14 +22,13 @@ public class EmailWatchServiceSubscription implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(EmailWatchServiceSubscription.class);
   private final Consumer<EmailWatchServiceSubscriptionEvent> callback;
   private final MyConnectorProperties connectorProperties;
+  private final Properties props;
   private volatile boolean isRunning = true;
-  private final Session session;
-  private final IMAPFolder imapFolder;
 
   public EmailWatchServiceSubscription(MyConnectorProperties connectorProperties,
       Consumer<EmailWatchServiceSubscriptionEvent> callback) throws MessagingException {
 
-    Properties props = new Properties();
+    this.props = new Properties();
     props.setProperty("mail.store.protocol", "imaps");
     props.setProperty("mail.imaps.host", connectorProperties.getUrl());
     props.setProperty("mail.imaps.port", connectorProperties.getPort());
@@ -38,26 +38,30 @@ public class EmailWatchServiceSubscription implements Runnable {
     this.connectorProperties = connectorProperties;
     this.callback = callback;
 
-    try {
-      LOG.info("running subscription thread for {}");
 
-      this.session = Session.getInstance(props);
+  }
+
+  private IMAPFolder connect() throws MessagingException {
+    try {
+      LOG.info("Connecting to imap folder ");
+
+      var session = Session.getInstance(props);
       LOG.info("creating session {}", session);
       //session.setDebug(true);
       Store store = session.getStore();
       LOG.info("creating store {}", store.hashCode());
       store.connect(connectorProperties.getUsername(), connectorProperties.getPassword());
-      this.imapFolder = (IMAPFolder) store.getFolder(connectorProperties.getFolder());
+      var imapFolder = (IMAPFolder) store.getFolder(connectorProperties.getFolder());
       LOG.info("creating folder {}", imapFolder.hashCode());
 
-
       imapFolder.open(Folder.READ_WRITE);
+
+      return imapFolder;
     } catch (MessagingException e) {
       LOG.error("Could not connect to IMAP Folder");
       LOG.debug("Used props {}", props);
       throw e;
     }
-
   }
 
   public void stop() {
@@ -76,67 +80,42 @@ public class EmailWatchServiceSubscription implements Runnable {
     var projectID = connectorProperties.getGcsProject();
     var bucketName = connectorProperties.getGcsBucketName();
 
-    LOG.info("Start long poll cycle");
-    imapFolder.addMessageCountListener(new MessageCountAdapter() {
-      @Override
-      public void messagesAdded(MessageCountEvent ev) {
-        Folder folder = (Folder) ev.getSource();
-        Message[] msgs = ev.getMessages();
-        LOG.info("Email(s) received in folder: " + folder + " with " + msgs.length + " new message(s)");
+    while (this.isRunning){
+      try (var imapFolder = connect()) {
+        imapFolder.addMessageCountListener(new MessageCountAdapter() {
+          @Override
+          public void messagesAdded(MessageCountEvent ev) {
+            Folder folder = (Folder) ev.getSource();
+            Message[] msgs = ev.getMessages();
+            LOG.info("Email(s) received in folder: " + folder + " with " + msgs.length + " new message(s)");
 
-        for (Message message : msgs) {
-          EmailMessageHandler.parseEmailAndSendtoCamunda(message, projectID, bucketName, connectorProperties.getPath(), callback);
+            for (Message message : msgs) {
+              EmailMessageHandler.parseEmailAndSendtoCamunda(message, projectID, bucketName, connectorProperties.getPath(), callback);
+            }
+          }
+        });
+        while (this.isRunning) {
+          var count = imapFolder.getMessageCount();
+          LOG.info("current unread count {}", count);
+          LOG.info("Starting Sleep ");
+          Thread.sleep(10000);// sleep before polling again
+          LOG.info("Sleep Done");
         }
-      }
-    });
-    boolean supportsIdle = false;
-    try {
-      try {
-          this.imapFolder.idle();
-          supportsIdle = false;
-      } catch (FolderClosedException fex) {
-        LOG.error("Folder closed, aborting",fex);
-        throw fex;
-      } catch (MessagingException mex) {
-        supportsIdle = false;
-      }
-      while (this.isRunning) {
+      } catch (MessagingException e) {
+        LOG.warn("Failed to connect to Imap server", e);
         try {
-          if (supportsIdle) {
-            LOG.info("Starting IDLE ");
-            this.imapFolder.idle();
-            LOG.info("IDLE done");
-          } else {
-            LOG.info("Starting Sleep ");
-            Thread.sleep(10000);// sleep before polling again
-            LOG.info("Sleep Done");
-            // This is to force the IMAP server to send us
-            // EXISTS notifications.
-            var count = this.imapFolder.getMessageCount();
-            LOG.info("current unread count {}", count);
-          }
-        } catch (MessagingException e){
-          LOG.error("Error while monitoring Imap folder. Retrying in 5s", e);
-          Thread.sleep(5000);
-          // Todo, add appropriate retry and fail eventually setting connector to unhealthy
-          }
+          Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+          throw new RuntimeException(ex);
+        }
+        //throw new RuntimeException(e);
+      } catch (InterruptedException e) {
+        LOG.warn("Interrupted during sleep");
+        throw new RuntimeException(e);
       }
-    } catch (MessagingException e) {
-      LOG.error("Error while monitoring Imap folder", e);
-      throw new RuntimeException(e);
-    } catch (InterruptedException e) {
-      LOG.error("Email Subscribtion Thread interrupted", e);
-      throw new RuntimeException(e);
-    }
 
-    LOG.info("Deactivated subscription");
-    try {
-      this.imapFolder.close();
-      this.session.getStore().close();
-    } catch (MessagingException e) {
-      LOG.error("Issues on resource release",e);
-      throw new RuntimeException("Issues on resource release",e);
     }
+    LOG.info("Deactivating Subscription");
 
   }
 }
